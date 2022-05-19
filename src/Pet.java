@@ -83,7 +83,8 @@ public class Pet {
         int option;
         do {
             System.out.println("What would like to do?\n" + "\t1) View all pets\n" + "\t2) Add more pets\n"
-                    + "\t3) Search pets by name\n" + "\t4) Search pets by age\n" + "\t5) Exit program\n");
+                    + "\t3) Update an existing pet\n" + "\t4) Remove an existing pet\n" + "\t5) Search pets by name\n"
+                    + "\t6) Search pets by age\n" + "\t7) Exit program");
             System.out.print("Your choice: ");
             option = scan.nextInt();
             scan.nextLine();
@@ -95,13 +96,18 @@ public class Pet {
                     addMorePets(scan);
                     break;
                 case 3:
-                    searchByPetName(scan);
+                    updateExistingPet(scan);
                     break;
                 case 4:
+                    removeExistingPet(scan);
+                    break;
+                case 5:
+                    searchByPetName(scan);
+                    break;
+                case 6:
                     searchByPetAge(scan);
                     break;
-
-                case 5:
+                case 7:
                     System.out.println("Goodbye!");
                     break;
 
@@ -211,6 +217,47 @@ public class Pet {
         System.out.println("+---------------------------------------+");
         System.out.println((i) + "rows in set.");
 
+    }
+
+
+    /**
+     * Update pet database
+     *
+     * @param scan
+     */
+    private static void updateExistingPet(Scanner scan) {
+
+        viewAllPets();
+        System.out.print("Enter the pet id to update: ");
+        int id = scan.nextInt();
+        scan.nextLine();
+        System.out.print("Enter the new name and age: ");
+        String petString = scan.nextLine();
+        String name = petString.split("\\s+")[0];
+        int age = Integer.parseInt(petString.split("\\s+")[1]);
+        String oldName = pets.get(id).getName();
+        int oldAge = pets.get(id).getAge();
+        pets.get(id).setName(name);
+        pets.get(id).setAge(age);
+
+        System.out.println(oldName + " " + oldAge + " changed to " + name + " " + age);
+    }
+
+    /**
+     * Removes pet from database
+     *
+     * @param scan
+     */
+    private static void removeExistingPet(Scanner scan) {
+
+        viewAllPets();
+        System.out.print("Enter pet id to remove: ");
+        int id = scan.nextInt();
+        scan.nextLine();
+        String name = pets.get(id).getName();
+        int age = pets.get(id).getAge();
+        pets.remove(id);
+        System.out.println(name + " " + age + " is removed.");
     }
 
 }
