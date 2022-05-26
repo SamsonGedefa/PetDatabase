@@ -1,0 +1,5 @@
+cat 8
+dog 2
+pet 3
+pet 5
+bird 2

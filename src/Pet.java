@@ -1,9 +1,10 @@
 /**
  * Author Samson Gedafa
- * Assignment: CSC 422 – Assignment #1 – Part 2
- * Date: 05/18/2022
+ * Assignment: CSC 422 – Assignment #2 – Part 2
+ * Date: 05/25/2022
  */
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -17,6 +18,11 @@ public class Pet {
     private int age;
 
     static ArrayList<Pet> pets;
+
+    static int size;
+
+    //    static String FILE_NAME = "petList.txt";
+    private static final String FILE_NAME = "petList.txt";
 
 
     /**
@@ -76,16 +82,20 @@ public class Pet {
     }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Scanner scan = new Scanner(System.in);
         pets = new ArrayList<>();
         int option;
+
+        readFile(); // load pet to memory at the start
         do {
             System.out.println("What would like to do?\n" + "\t1) View all pets\n" + "\t2) Add more pets\n"
                     + "\t3) Update an existing pet\n" + "\t4) Remove an existing pet\n" + "\t5) Search pets by name\n"
                     + "\t6) Search pets by age\n" + "\t7) Exit program");
+
             System.out.print("Your choice: ");
+
             option = scan.nextInt();
             scan.nextLine();
             switch (option) {
@@ -122,6 +132,37 @@ public class Pet {
     }
 
     /**
+     * Load file pet list to memory
+     *
+     * @throws FileNotFoundException
+     */
+    public static void readFile() throws FileNotFoundException {
+        Scanner scanner = new Scanner(new File(FILE_NAME));
+
+        while (scanner.hasNextLine()) {
+            String[] parts = scanner.nextLine().split(" ");
+            pets.add(new Pet(parts[0], Integer.parseInt(parts[1])));
+        }
+        System.out.println();
+    }
+
+    /**
+     * Write pet to file
+     *
+     * @throws IOException
+     */
+    public static void writeToFile() throws IOException {
+
+        BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME));
+
+        for (Pet pet : pets) {
+            writer.write(pet.getName() + " " + pet.getAge() + System.lineSeparator());
+        }
+
+        writer.close();
+    }
+
+    /**
      * Display all pets in the database
      */
     private static void viewAllPets() {
@@ -145,24 +186,53 @@ public class Pet {
      *
      * @param scan
      */
-    private static void addMorePets(Scanner scan) {
-        int count = 0;
+    private static void addMorePets(Scanner scan) throws IOException {
+
+
         String petString = "";
         do {
 
+            if (size >= 5 || pets.size() >= 5) {
+                System.out.println("Error: Database is full.\n");
+                return;
+            }
+
             System.out.print("add pet (name, age): ");
             petString = scan.nextLine();
+
             if (petString.equalsIgnoreCase("done")) {
                 break;
             }
+
+            if (petString.isEmpty()) {
+                System.out.println("Error: Please, make sure you entered both name and age.\n");
+                return;
+            } else if (petString.split(" ").length != 2) {
+                System.out.println("Error: Please, make sure you entered both name and age.\n");
+                return;
+            } else if (isInteger(petString.split("\\s+")[0]) || !isInteger(petString.split("\\s+")[1])) {
+                System.out.println("Error: Invalid name and age.\n");
+                return;
+            }
+
             String name = petString.split("\\s+")[0];
             int age = Integer.parseInt(petString.split("\\s+")[1]);
 
+
+            if (age < 1 || age > 20) {
+                System.out.println("Error: Age must be between 0 and 20.\n");
+                return;
+            }
+
+
             pets.add(new Pet(name, age));
-            count++;
+            writeToFile();
+            size++;
 
         } while (!petString.equalsIgnoreCase("done"));
-        System.out.println(count + " pets added.");
+
+
+        System.out.println(size + " pets added.");
     }
 
 
@@ -225,12 +295,18 @@ public class Pet {
      *
      * @param scan
      */
-    private static void updateExistingPet(Scanner scan) {
+    private static void updateExistingPet(Scanner scan) throws IOException {
 
         viewAllPets();
         System.out.print("Enter the pet id to update: ");
         int id = scan.nextInt();
         scan.nextLine();
+
+        if (!checkIdInBound(id)) {
+            System.out.println("Error: Invalid id.\n");
+            return;
+        }
+
         System.out.print("Enter the new name and age: ");
         String petString = scan.nextLine();
         String name = petString.split("\\s+")[0];
@@ -239,6 +315,7 @@ public class Pet {
         int oldAge = pets.get(id).getAge();
         pets.get(id).setName(name);
         pets.get(id).setAge(age);
+        writeToFile();
 
         System.out.println(oldName + " " + oldAge + " changed to " + name + " " + age);
     }
@@ -248,17 +325,52 @@ public class Pet {
      *
      * @param scan
      */
-    private static void removeExistingPet(Scanner scan) {
+    private static void removeExistingPet(Scanner scan) throws IOException {
 
         viewAllPets();
         System.out.print("Enter pet id to remove: ");
         int id = scan.nextInt();
         scan.nextLine();
+
+
+        if (!checkIdInBound(id)) {
+            System.out.println("Error: Invalid id.\n");
+            return;
+        }
+
         String name = pets.get(id).getName();
         int age = pets.get(id).getAge();
         pets.remove(id);
+        writeToFile();
+        size--;
         System.out.println(name + " " + age + " is removed.");
     }
 
+    /**
+     * Checks if id is in array range
+     *
+     * @param id
+     * @return
+     */
+    public static boolean checkIdInBound(int id) {
+        return id >= 0 && id < pets.size();
+    }
+
+    /**
+     * Check if input is digit or not
+     *
+     * @param name
+     * @return
+     */
+    private static boolean isInteger(String name) {
+        try {
+            Integer.parseInt(name);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 }
+
+
 
